@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DroidGen AI | Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .neon-glow { box-shadow: 0 0 20px rgba(6, 182, 212, 0.5); }
+        .bg-dark { background-color: #0f172a; }
+        .bg-card { background-color: #1e293b; }
+        .gradient-text { background: linear-gradient(to right, #22d3ee, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .progress-bar { width: 0%; transition: width 0.5s ease-in-out; }
+        
+        /* Oculta as seções inativas */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-dark text-slate-200 antialiased min-h-screen flex flex-col md:flex-row">
+
+    <nav class="md:w-64 bg-slate-900 border-b md:border-b-0 md:border-r border-slate-800 p-6 flex flex-col justify-between">
+        <div>
+            <div class="flex items-center gap-3 mb-10">
+                <div class="w-10 h-10 bg-cyan-500 rounded-lg flex items-center justify-center neon-glow">
+                    <i class="fas fa-layer-group text-slate-900"></i>
+                </div>
+                <span class="text-2xl font-black text-white uppercase">Droid<span class="text-cyan-400">Gen</span></span>
+            </div>
+            
+            <div class="space-y-2">
+                <button onclick="mudarAba('criar')" class="w-full flex items-center gap-3 bg-cyan-500/10 text-cyan-400 p-3 rounded-xl font-bold transition hover:bg-cyan-500/20 text-left">
+                    <i class="fas fa-plus-circle"></i> Criar App
+                </button>
+                <button onclick="mudarAba('biblioteca')" class="w-full flex items-center gap-3 text-slate-400 p-3 rounded-xl font-bold transition hover:bg-slate-800 hover:text-white text-left">
+                    <i class="fas fa-mobile-alt"></i> Meus Apps
+                </button>
+            </div>
+        </div>
+        
+        <div class="mt-10 md:mt-0 border-t border-slate-800 pt-6">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center">
+                    <i class="fas fa-user text-slate-300"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-bold text-white">Conta Grátis</p>
+                    <p class="text-xs text-slate-400">3/5 APKs gerados</p>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-1 p-6 md:p-10 overflow-y-auto">
+        
+        <section id="aba-criar" class="tab-content active max-w-3xl mx-auto">
+            <h1 class="text-3xl font-black text-white mb-2">Novo Projeto</h1>
+            <p class="text-slate-400 mb-8">Descreva sua ideia e a IA fará o resto.</p>
+
+            <div class="bg-card rounded-3xl p-6 border border-slate-700 shadow-xl">
+                <div id="form-area">
+                    <input type="text" id="nomeApp" placeholder="Nome do seu Aplicativo" 
+                        class="w-full bg-slate-900 border border-slate-700 rounded-xl p-4 mb-4 outline-none focus:ring-2 focus:ring-cyan-500 text-white font-bold">
+
+                    <div class="flex gap-4 mb-4">
+                        <select class="w-1/2 bg-slate-900 border border-slate-700 rounded-xl p-4 outline-none focus:ring-2 focus:ring-cyan-500 text-slate-300">
+                            <option>Estilo: Moderno/Minimalista</option>
+                            <option>Estilo: Escuro/Neon</option>
+                            <option>Estilo: Corporativo</option>
+                        </select>
+                        <select class="w-1/2 bg-slate-900 border border-slate-700 rounded-xl p-4 outline-none focus:ring-2 focus:ring-cyan-500 text-slate-300">
+                            <option>Ícone: Gerar por IA</option>
+                            <option>Ícone: Padrão do Sistema</option>
+                        </select>
+                    </div>
+
+                    <textarea id="descApp" rows="5" placeholder="Quais as funcionalidades principais? (Ex: Tela de login, lista de tarefas, botão flutuante para adicionar fotos...)"
+                        class="w-full bg-slate-900 border border-slate-700 rounded-xl p-4 mb-6 outline-none focus:ring-2 focus:ring-cyan-500 resize-none"></textarea>
+
+                    <button onclick="iniciarCriacao()" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-900 font-black py-4 rounded-xl text-lg neon-glow active:scale-95 transition flex justify-center items-center gap-2">
+                        <i class="fas fa-magic"></i> INICIAR GERAÇÃO IA
+                    </button>
+                </div>
+
+                <div id="loading-area" class="hidden py-8 text-center">
+                    <div class="relative w-24 h-24 mx-auto mb-6">
+                        <div class="absolute inset-0 border-4 border-slate-700 rounded-full"></div>
+                        <div class="absolute inset-0 border-4 border-cyan-500 rounded-full border-t-transparent animate-spin"></div>
+                        <i class="fas fa-robot absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-3xl text-cyan-400"></i>
+                    </div>
+                    <h3 id="status-texto" class="text-xl font-bold mb-2 text-white">Analisando Prompt...</h3>
+                    <p id="log" class="text-slate-400 font-mono text-sm mb-6">> Configurando ambiente de compilação</p>
+                    
+                    <div class="w-full bg-slate-900 h-3 rounded-full overflow-hidden">
+                        <div id="bar" class="h-full bg-gradient-to-r from-cyan-400 to-blue-500 progress-bar"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="aba-biblioteca" class="tab-content max-w-4xl mx-auto">
+            <h1 class="text-3xl font-black text-white mb-2">Meus Aplicativos</h1>
+            <p class="text-slate-400 mb-8">Histórico de APKs gerados pela sua conta.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-card p-5 rounded-2xl border border-slate-700 flex items-center gap-4 hover:border-cyan-500 transition cursor-pointer">
+                    <div class="w-16 h-16 bg-blue-500 rounded-xl flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+                        G
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-bold text-lg text-white">Gestão Financeira</h3>
+                        <p class="text-xs text-slate-400">Gerado há 2 dias • 14.2 MB</p>
+                    </div>
+                    <button class="bg-slate-700 hover:bg-slate-600 w-10 h-10 rounded-full flex items-center justify-center transition">
+                        <i class="fas fa-download text-cyan-400"></i>
+                    </button>
+                </div>
+
+                <div class="bg-card p-5 rounded-2xl border border-slate-700 flex items-center gap-4 hover:border-cyan-500 transition cursor-pointer">
+                    <div class="w-16 h-16 bg-purple-500 rounded-xl flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+                        <i class="fas fa-dumbbell"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-bold text-lg text-white">FitTrack Pro</h3>
+                        <p class="text-xs text-slate-400">Gerado há 1 semana • 22.1 MB</p>
+                    </div>
+                    <button class="bg-slate-700 hover:bg-slate-600 w-10 h-10 rounded-full flex items-center justify-center transition">
+                        <i class="fas fa-download text-cyan-400"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // Função para alternar entre as abas do menu
+        function mudarAba(aba) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById('aba-' + aba).classList.add('active');
+        }
+
+        // Lógica visual da barra de progresso (Simulação)
+        function iniciarCriacao() {
+            const nome = document.getElementById('nomeApp').value;
+            if(!nome) return alert("Por favor, preencha o nome do app!");
+
+            document.getElementById('form-area').classList.add('hidden');
+            document.getElementById('loading-area').classList.remove('hidden');
+
+            const bar = document.getElementById('bar');
+            const status = document.getElementById('status-texto');
+            const log = document.getElementById('log');
+
+            const etapas = [
+                { p: 20, t: "Escrevendo Kotlin...", l: "> Criando MainActivity e Adapters" },
+                { p: 50, t: "Desenhando UI...", l: "> Gerando arquivos XML (Material Design 3)" },
+                { p: 80, t: "Compilando APK...", l: "> Executando Gradle Build (Isso pode demorar)" },
+                { p: 100, t: "Finalizando...", l: "> Assinando o APK..." }
+            ];
+
+            let i = 0;
+            const intervalo = setInterval(() => {
+                if (i < etapas.length) {
+                    bar.style.width = etapas[i].p + "%";
+                    status.innerText = etapas[i].t;
+                    log.innerText = etapas[i].l;
+                    i++;
+                } else {
+                    clearInterval(intervalo);
+                    status.innerText = "APK Gerado com Sucesso!";
+                    log.innerText = "> Redirecionando para download...";
+                    setTimeout(() => {
+                        alert("O design está pronto! Agora precisamos conectar a IA de verdade.");
+                        document.getElementById('form-area').classList.remove('hidden');
+                        document.getElementById('loading-area').classList.add('hidden');
+                        bar.style.width = "0%";
+                    }, 1500);
+                }
+            }, 2500);
+        }
+    </script>
+</body>
+</html>
